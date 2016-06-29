@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -31,6 +32,7 @@ public class HbaseClientSample {
 	private static final String HBASER_MASTER_IP = "192.168.232.128";
 	private static final String HBASER_MASTER_PORT = "60000";
 	private static final String HBASER_ZOOKEEPER_PORT = "2181";
+	private static final String TABLE_NAME = "MyTable";
 	public static Configuration configuration;
 	static {
 		configuration = HBaseConfiguration.create();
@@ -40,14 +42,14 @@ public class HbaseClientSample {
 	}
 
 	public static void main(String[] args) {
-		// createTable("MyTable");
-		insertData("MyTable");
-		// QueryAll("wujintao");
-		// QueryByCondition1("wujintao");
-		// QueryByCondition2("wujintao");
-		// QueryByCondition3("wujintao");
-		// deleteRow("wujintao","abcdef");
-		// deleteByCondition("wujintao","abcdef");
+		// createTable(TABLE_NAME);
+		 insertData(TABLE_NAME);
+		// QueryAll(TABLE_NAME);
+		// QueryByCondition1(TABLE_NAME);
+		// QueryByCondition2(TABLE_NAME);
+		// QueryByCondition3(TABLE_NAME);
+		// deleteRow(TABLE_NAME,"112233bbbcccc");
+		// deleteColumn(TABLE_NAME, "445566bbbcccc", "column2");
 	}
 
 	/**
@@ -95,9 +97,9 @@ public class HbaseClientSample {
 			e1.printStackTrace();
 		}
 		Put put = new Put("445566bbbcccc".getBytes());// 一个PUT代表一行数据，再NEW一个PUT表示第二行数据,每行一个唯一的ROWKEY，此处rowkey为put构造方法中传入的值
-		put.addColumn("column1".getBytes(), null, "fff".getBytes());// 本行数据的第一列
-		put.addColumn("column2".getBytes(), null, "ggg".getBytes());// 本行数据的第三列
-		put.addColumn("column3".getBytes(), null, "hhh".getBytes());// 本行数据的第三列
+		put.addColumn("column1".getBytes(), null, "eee".getBytes());// 本行数据的第一列
+		put.addColumn("column2".getBytes(), null, "rrr".getBytes());// 本行数据的第三列
+		put.addColumn("column3".getBytes(), null, "ttt".getBytes());// 本行数据的第三列
 		try {
 			table.put(put);
 		} catch (IOException e) {
@@ -135,7 +137,7 @@ public class HbaseClientSample {
 	public static void deleteRow(String tablename, String rowkey) {
 		try {
 			HTable table = new HTable(configuration, tablename);
-			List list = new ArrayList();
+			List<Delete> list = new ArrayList<Delete>();
 			Delete d1 = new Delete(rowkey.getBytes());
 			list.add(d1);
 
@@ -149,14 +151,24 @@ public class HbaseClientSample {
 	}
 
 	/**
-	 * 组合条件删除
+	 * 删除列
 	 * 
 	 * @param tablename
-	 * @param rowkey
+	 * @param columnname
 	 */
-	public static void deleteByCondition(String tablename, String rowkey) {
-		// 目前还没有发现有效的API能够实现 根据非rowkey的条件删除 这个功能能，还有清空表全部数据的API操作
+	public static void deleteColumn(String tablename, String rowkey, String columnname) {
+		HTable table;
+		try {
+			table = new HTable(configuration, tablename);
 
+			Delete deleteColumn = new Delete(rowkey.getBytes());
+			deleteColumn.deleteFamily(columnname.getBytes());
+			table.delete(deleteColumn);
+			System.out.println("删除行成功!");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -165,15 +177,22 @@ public class HbaseClientSample {
 	 * @param tableName
 	 */
 	public static void QueryAll(String tableName) {
-		HTablePool pool = new HTablePool(configuration, 1000);
-		HTable table = (HTable) pool.getTable(tableName);
+		HTable table = null;
+		try {
+			table = new HTable(configuration, tableName);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			ResultScanner rs = table.getScanner(new Scan());
 			for (Result r : rs) {
-				System.out.println("获得到rowkey:" + new String(r.getRow()));
-				for (KeyValue keyValue : r.raw()) {
-					System.out.println(
-							"列：" + new String(keyValue.getFamily()) + "====值:" + new String(keyValue.getValue()));
+				System.out.println("rowkey:" + new String(r.getRow()));
+				for (Cell cell : r.rawCells()) {
+					System.out.println("col："
+							+ Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(), cell.getFamilyLength())
+							+ "	value:"
+							+ Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength()));
 				}
 			}
 		} catch (IOException e) {
@@ -188,15 +207,22 @@ public class HbaseClientSample {
 	 */
 	public static void QueryByCondition1(String tableName) {
 
-		HTablePool pool = new HTablePool(configuration, 1000);
-		HTable table = (HTable) pool.getTable(tableName);
+		HTable table = null;
 		try {
-			Get scan = new Get("abcdef".getBytes());// 根据rowkey查询
+			table = new HTable(configuration, tableName);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			Get scan = new Get("112233bbbcccc".getBytes());// 根据rowkey查询
 			Result r = table.get(scan);
-			System.out.println("获得到rowkey:" + new String(r.getRow()));
-			for (KeyValue keyValue : r.raw()) {
-				System.out
-						.println("列：" + new String(keyValue.getFamily()) + "====值:" + new String(keyValue.getValue()));
+			System.out.println("rowkey:" + new String(r.getRow()));
+			for (Cell cell : r.rawCells()) {
+				System.out.println(
+						"col：" + Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(), cell.getFamilyLength())
+								+ "	value:"
+								+ Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength()));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -211,18 +237,20 @@ public class HbaseClientSample {
 	public static void QueryByCondition2(String tableName) {
 
 		try {
-			HTablePool pool = new HTablePool(configuration, 1000);
-			HTable table = (HTable) pool.getTable(tableName);
+
+			HTable table = new HTable(configuration, tableName);
 			Filter filter = new SingleColumnValueFilter(Bytes.toBytes("column1"), null, CompareOp.EQUAL,
 					Bytes.toBytes("aaa")); // 当列column1的值为aaa时进行查询
 			Scan s = new Scan();
 			s.setFilter(filter);
 			ResultScanner rs = table.getScanner(s);
 			for (Result r : rs) {
-				System.out.println("获得到rowkey:" + new String(r.getRow()));
-				for (KeyValue keyValue : r.raw()) {
-					System.out.println(
-							"列：" + new String(keyValue.getFamily()) + "====值:" + new String(keyValue.getValue()));
+				System.out.println("rowkey:" + new String(r.getRow()));
+				for (Cell cell : r.rawCells()) {
+					System.out.println("col："
+							+ Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(), cell.getFamilyLength())
+							+ "	value:"
+							+ Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength()));
 				}
 			}
 		} catch (Exception e) {
@@ -239,8 +267,8 @@ public class HbaseClientSample {
 	public static void QueryByCondition3(String tableName) {
 
 		try {
-			HTablePool pool = new HTablePool(configuration, 1000);
-			HTable table = (HTable) pool.getTable(tableName);
+
+			HTable table = new HTable(configuration, tableName);
 
 			List<Filter> filters = new ArrayList<Filter>();
 
@@ -262,10 +290,12 @@ public class HbaseClientSample {
 			scan.setFilter(filterList1);
 			ResultScanner rs = table.getScanner(scan);
 			for (Result r : rs) {
-				System.out.println("获得到rowkey:" + new String(r.getRow()));
-				for (KeyValue keyValue : r.raw()) {
-					System.out.println(
-							"列：" + new String(keyValue.getFamily()) + "====值:" + new String(keyValue.getValue()));
+				System.out.println("rowkey:" + new String(r.getRow()));
+				for (Cell cell : r.rawCells()) {
+					System.out.println("col："
+							+ Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(), cell.getFamilyLength())
+							+ "	value:"
+							+ Bytes.toString(cell.getValueArray(), cell.getValueOffset(), cell.getValueLength()));
 				}
 			}
 			rs.close();
