@@ -20,26 +20,27 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 
-public class ParseExcelToHbase {
+public class ExcelToHbase {
 	private static final String TABLE_NAME = "testtable";
 	private static final String FILE_NAME = "test.xls";
-	
+
 	private static String[] strHeaders;
 	private static String[] strColumns = { "des", "quan", "unit", "brand" };
 
 	private Configuration configuration;
-	
-	public ParseExcelToHbase() {
+
+	public ExcelToHbase() {
 		super();
 		configuration = HBaseUtils.getConfiguration();
 	}
 
 	public static void main(String[] args) {
-		ParseExcelToHbase pe = new ParseExcelToHbase();
+		ExcelToHbase pe = new ExcelToHbase();
 		pe.parse();
 		// pe.createTable(TABLE_NAME, strHeaders);
 	}
 
+	
 	public void parse() {
 		createTable(TABLE_NAME, strColumns);
 
@@ -63,7 +64,7 @@ public class ParseExcelToHbase {
 					lPuts.add(parseRowAndPut(cells));
 				}
 			}
-
+			
 			HTable table = null;
 			try {
 				table = new HTable(configuration, TABLE_NAME);
@@ -115,7 +116,8 @@ public class ParseExcelToHbase {
 	public void createTable(String tableName, String[] strColumn) {
 		System.out.println("start create table ......");
 		try {
-			HBaseAdmin hBaseAdmin = new HBaseAdmin(configuration);
+
+			HBaseAdmin hBaseAdmin = (HBaseAdmin) HBaseUtils.getHConnection().getAdmin();
 			if (hBaseAdmin.tableExists(tableName)) {// 如果存在要创建的表，那么先删除，再创建
 				// hBaseAdmin.disableTable(tableName);
 				// hBaseAdmin.deleteTable(tableName);
@@ -137,7 +139,7 @@ public class ParseExcelToHbase {
 		System.out.println("end create table ......");
 	}
 
-	private static boolean isChineseChar(String str) {
+	public static boolean isChineseChar(String str) {
 		boolean temp = false;
 		Pattern p = Pattern.compile("[\u4e00-\u9fa5]");
 		Matcher m = p.matcher(str);
