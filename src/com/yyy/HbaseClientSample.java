@@ -43,8 +43,8 @@ public class HbaseClientSample {
 
 	public static void main(String[] args) {
 		// createTable(TABLE_NAME);
-		 insertData(TABLE_NAME);
-		// QueryAll(TABLE_NAME);
+		// insertData(TABLE_NAME);
+		 QueryAll(TABLE_NAME);
 		// QueryByCondition1(TABLE_NAME);
 		// QueryByCondition2(TABLE_NAME);
 		// QueryByCondition3(TABLE_NAME);
