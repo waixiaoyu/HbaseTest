@@ -43,8 +43,8 @@ public class HbaseClientSample {
 
 	public static void main(String[] args) {
 		// createTable(TABLE_NAME);
-		// insertData(TABLE_NAME);
-		 QueryAll(TABLE_NAME);
+		 insertData(TABLE_NAME);
+		// QueryAll(TABLE_NAME);
 		// QueryByCondition1(TABLE_NAME);
 		// QueryByCondition2(TABLE_NAME);
 		// QueryByCondition3(TABLE_NAME);
@@ -96,10 +96,10 @@ public class HbaseClientSample {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		Put put = new Put("445566bbbcccc".getBytes());// 一个PUT代表一行数据，再NEW一个PUT表示第二行数据,每行一个唯一的ROWKEY，此处rowkey为put构造方法中传入的值
-		put.addColumn("column1".getBytes(), null, "eee".getBytes());// 本行数据的第一列
-		put.addColumn("column2".getBytes(), null, "rrr".getBytes());// 本行数据的第三列
-		put.addColumn("column3".getBytes(), null, "ttt".getBytes());// 本行数据的第三列
+		Put put = new Put("778899bbbcccc".getBytes());// 一个PUT代表一行数据，再NEW一个PUT表示第二行数据,每行一个唯一的ROWKEY，此处rowkey为put构造方法中传入的值
+		put.addColumn("column1".getBytes(), null, "aaa".getBytes());// 本行数据的第一列
+		put.addColumn("column2".getBytes(), null, "qqqqqqqnull".getBytes());// 本行数据的第三列
+		put.addColumn("column3".getBytes(), null, "www".getBytes());// 本行数据的第三列
 		try {
 			table.put(put);
 		} catch (IOException e) {
