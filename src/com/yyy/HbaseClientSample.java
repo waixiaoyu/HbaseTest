@@ -32,7 +32,7 @@ public class HbaseClientSample {
 	private static final String HBASER_MASTER_IP = "192.168.232.128";
 	private static final String HBASER_MASTER_PORT = "60000";
 	private static final String HBASER_ZOOKEEPER_PORT = "2181";
-	private static final String TABLE_NAME = "MyTable";
+	private static final String TABLE_NAME = "testtable";
 	public static Configuration configuration;
 	static {
 		configuration = HBaseConfiguration.create();
@@ -43,12 +43,12 @@ public class HbaseClientSample {
 
 	public static void main(String[] args) {
 		// createTable(TABLE_NAME);
-		 insertData(TABLE_NAME);
+		// insertData(TABLE_NAME);
 		// QueryAll(TABLE_NAME);
 		// QueryByCondition1(TABLE_NAME);
 		// QueryByCondition2(TABLE_NAME);
 		// QueryByCondition3(TABLE_NAME);
-		// deleteRow(TABLE_NAME,"112233bbbcccc");
+		 deleteRow(TABLE_NAME,"des");
 		// deleteColumn(TABLE_NAME, "445566bbbcccc", "column2");
 	}
 
