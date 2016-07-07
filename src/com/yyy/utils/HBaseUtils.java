@@ -1,4 +1,4 @@
-package com.yyy.dao;
+package com.yyy.utils;
 
 import java.io.IOException;
 
@@ -10,9 +10,9 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 
 public class HBaseUtils {
 
-	private static final String HBASER_MASTER_IP = "192.168.232.128";
+	private static final String HBASER_MASTER_IP = "192.168.3.128";
 	private static final String HBASER_MASTER_PORT = "60000";
-	private static final String QUORUM_IP = "192.168.232.128";
+	private static final String QUORUM_IP = "192.168.3.128";
 	private static final String CLIENTPORT = "2181";
 	private static Configuration conf = null;
 	private static Connection conn = null;

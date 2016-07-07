@@ -16,12 +16,14 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 
+import com.yyy.utils.HBaseUtils;
+
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 
 public class ExcelToHbase {
-	private static final String TABLE_NAME = "testtable";
+	private static final String TABLE_NAME = "tablefromexcel";
 	private static final String FILE_NAME = "test.xls";
 
 	private static String[] strHeaders;
