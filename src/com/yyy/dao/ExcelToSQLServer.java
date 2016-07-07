@@ -1,46 +1,44 @@
-package com.yyy;
+package com.yyy.dao;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import com.yyy.utils.SQLServerUtils;
 
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 
-public class ExcelToMysql {
+public class ExcelToSQLServer {
 	private static final String FILE_NAME = "test.xls";
 	private static final String TABLE_NAME = "DATA";
 	private Connection conn = null;
 
-	public ExcelToMysql() {
+	public ExcelToSQLServer() {
 		super();
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} // 动态加载mysql驱动
-		this.conn = MysqlUtils.getConnection();
+		this.conn = SQLServerUtils.getConnection();
 	}
 
 	public static void main(String[] args) {
-		ExcelToMysql etm = new ExcelToMysql();
+		ExcelToSQLServer etm = new ExcelToSQLServer();
 		etm.createTable();
 		etm.insert();
+		//etm.search();
 	}
 
 	public void createTable() {
 		if (conn == null) {
-			conn = MysqlUtils.getConnection();
+			conn = SQLServerUtils.getConnection();
 		}
 		try {
 			Statement stmt = conn.createStatement();
 			if (!conn.getMetaData().getTables(null, null, TABLE_NAME, null).next()) {
 				String sql = "CREATE TABLE " + TABLE_NAME
-						+ " (`id` INT KEY NOT NULL AUTO_INCREMENT ,des CHAR(20),quantity CHAR(10),unit CHAR(10),COM CHAR(10),HeZhong CHAR(10), TCL CHAR(10), HuaDong CHAR(10),LQ CHAR(10),total CHAR(10))";
+						+ " (id int IDENTITY (1,1) PRIMARY KEY ,des CHAR(20),quantity CHAR(10),unit CHAR(10),COM CHAR(10),HeZhong CHAR(10), TCL CHAR(10), HuaDong CHAR(10),LQ CHAR(10),total CHAR(10))";
 				int result = stmt.executeUpdate(sql);
 				if (result != -1) {
 					System.out.println("创建数据表成功");
@@ -50,20 +48,32 @@ public class ExcelToMysql {
 			System.out.println("MySQL操作错误");
 			e.printStackTrace();
 		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+
+		}
+
+	}
+
+	public void search() {
+		if (conn == null) {
+			conn = SQLServerUtils.getConnection();
+		}
+		PreparedStatement pstmt;
+		try {
+			pstmt = conn.prepareStatement("select * from data");
+			ResultSet rs=pstmt.executeQuery();
+			while (rs.next()) {
+				System.out.println(rs.getString(2));
 			}
-			conn = null;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
 
 	public void insert() {
 		if (conn == null) {
-			conn = MysqlUtils.getConnection();
+			conn = SQLServerUtils.getConnection();
 		}
 		Sheet sheet;
 		Workbook book;
@@ -82,16 +92,11 @@ public class ExcelToMysql {
 				}
 			}
 			book.close();
+			System.out.println("插入结束！");
 		} catch (Exception e) {
 			System.out.println(e);
 		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			conn = null;
+
 		}
 	}
 

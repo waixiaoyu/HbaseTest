@@ -1,4 +1,4 @@
-package com.yyy;
+package com.yyy.dao;
 
 public class MysqlToHbase {
 

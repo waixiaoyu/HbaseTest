@@ -1,4 +1,4 @@
-package com.yyy;
+package com.yyy.dao;
 
 import org.apache.sqoop.client.SqoopClient;
 import org.apache.sqoop.model.MDriverConfig;

@@ -36,7 +36,12 @@
 		    <artifactId>sqoop-client</artifactId>
 		     <version>1.99.4</version>
 		 </dependency>
- 
+		 <!-- https://mvnrepository.com/artifact/com.hynnet/sqljdbc4-chs -->
+		<dependency>
+		    <groupId>com.hynnet</groupId>
+		    <artifactId>sqljdbc4-chs</artifactId>
+		    <version>4.0.2206.100</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
 			<groupId>mysql</groupId>

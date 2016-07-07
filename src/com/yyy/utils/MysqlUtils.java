@@ -1,4 +1,4 @@
-package com.yyy;
+package com.yyy.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
