@@ -54,8 +54,8 @@ public class HBaseUtils {
 		}
 		return conn;
 	}
-	
-	public static void createTable(String tableName, String[] strColumn) {
+
+	public static synchronized void createTable(String tableName, String[] strColumn) {
 		System.out.println("start create table ......");
 		try {
 
