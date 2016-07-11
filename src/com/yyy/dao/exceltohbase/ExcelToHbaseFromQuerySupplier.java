@@ -38,7 +38,7 @@ public class ExcelToHbaseFromQuerySupplier {
 	public static void main(String[] args) throws IOException {
 		ExcelToHbaseFromQuerySupplier pe = new ExcelToHbaseFromQuerySupplier();
 
-		pe.deleteTable(TABLE_NAME);
+		//pe.deleteTable(TABLE_NAME);
 		pe.parseExcel();
 		// pe.createTable(TABLE_NAME, strFamilys);
 	}
@@ -58,7 +58,7 @@ public class ExcelToHbaseFromQuerySupplier {
 			// 获取put数组，提高put效率
 			List<Put> lPuts = new ArrayList<Put>();
 
-			for (int i = 1; i < 2; i++) {
+			for (int i = 1; i < sheet.getRows()-1; i++) {
 				lPuts.add(parseRowAndPut(sheet.getRow(i)));
 			}
 
@@ -79,13 +79,14 @@ public class ExcelToHbaseFromQuerySupplier {
 	}
 
 	public Put parseRowAndPut(Cell[] cells) {
-		Put put = new Put(
-				(cells[2].getContents() + "," + cells[3].getContents() + "," + cells[10].getContents()).getBytes());// 一个PUT代表一行数据，再NEW一个PUT表示第二行数据,每行一个唯一的ROWKEY，此处rowkey为put构造方法中传入的值
+		Put put = new Put((cells[0].getContents() + "," + cells[2].getContents()).getBytes());// 一个PUT代表一行数据，再NEW一个PUT表示第二行数据,每行一个唯一的ROWKEY，此处rowkey为put构造方法中传入的值
 		// 设定每个family和对应的value
 		put.addColumn(strFamilys[0].getBytes(), null, cells[0].getContents().getBytes());// 本行数据的第一列
 		put.addColumn(strFamilys[1].getBytes(), null, cells[1].getContents().getBytes());// 本行数据的第一列
 
-
+		put.addColumn(strFamilys[2].getBytes(), "ori".getBytes(), cells[2].getContents().getBytes());
+		put.addColumn(strFamilys[2].getBytes(), "car".getBytes(), cells[3].getContents().getBytes());
+		put.addColumn(strFamilys[2].getBytes(), "inv".getBytes(), cells[4].getContents().getBytes());
 
 		return put;
 	}
