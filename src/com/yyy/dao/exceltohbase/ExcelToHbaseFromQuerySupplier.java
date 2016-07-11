@@ -37,9 +37,9 @@ public class ExcelToHbaseFromQuerySupplier {
 
 	public static void main(String[] args) throws IOException {
 		ExcelToHbaseFromQuerySupplier pe = new ExcelToHbaseFromQuerySupplier();
-
+		//HBaseUtils.createTable(TABLE_NAME, strFamilys);
 		//pe.deleteTable(TABLE_NAME);
-		pe.parseExcel();
+		 pe.parseExcel();
 		// pe.createTable(TABLE_NAME, strFamilys);
 	}
 

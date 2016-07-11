@@ -13,7 +13,7 @@ public class MysqlUtils {
 			Class.forName("com.mysql.jdbc.Driver"); // 注册数据库驱动
 			// 定义连接数据库的url
 			con = DriverManager.getConnection(url); // 获取数据库连接
-			System.out.println("数据库连接成功！");
+			System.out.println("mysql 数据库连接成功！");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -49,7 +49,7 @@ public class WordCountHBase {
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TableOutputFormat.class);
 		// …Ë÷√ ‰»Îƒø¬º
-		FileInputFormat.addInputPath(job, new Path("hdfs://192.168.3.128:9000/input/wordcount/*"));
+		FileInputFormat.addInputPath(job, new Path("hdfs://192.168.3.201:9000/input/wordcount/*"));
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 

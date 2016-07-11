@@ -23,7 +23,7 @@ public class SQLServerUtils {
 				Class.forName(sDriverName);
 				conn = DriverManager.getConnection(sDBUrl, USERNAME, PASSWORD);
 				if (conn != null) {
-					System.out.println("数据库连接成功！");
+					System.out.println("SQL Server 数据库连接成功！");
 				} else {
 					System.out.println("conn = null");
 
