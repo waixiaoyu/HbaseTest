@@ -10,6 +10,8 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -35,11 +37,11 @@ public class CountOrderDetailToHbase {
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
 		// TODO Auto-generated method stub
-		String tablename = "orderdetail";
+		String tablename = "orderdetailr";
 		Configuration conf = HBaseUtils.getConfiguration();
 		conf.set(TableOutputFormat.OUTPUT_TABLE, tablename);
 		createHBaseTable(tablename);
-		Job job = Job.getInstance(conf, "order detail");
+		Job job = Job.getInstance(conf, "sort result");
 		job.setJarByClass(CountOrderDetailToHbase.class);
 		job.setNumReduceTasks(3);
 		job.setMapperClass(Map.class);
@@ -53,12 +55,12 @@ public class CountOrderDetailToHbase {
 		System.out.println(job.waitForCompletion(true) ? "完成！" : "非正常退出！");
 	}
 
-	public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
+	public static class Map extends Mapper<ImmutableBytesWritable, Result, Text, IntWritable> {
 		private final static IntWritable one = new IntWritable(1);
 		private Text text = new Text();
 
 		@Override
-		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+		public void map(ImmutableBytesWritable row, Result value, Context context) throws IOException, InterruptedException {
 			String s = value.toString();
 			text.set(s);
 			if (text.getLength() == 0) {
@@ -68,7 +70,7 @@ public class CountOrderDetailToHbase {
 		}
 
 		@Override
-		protected void cleanup(Mapper<LongWritable, Text, Text, IntWritable>.Context context)
+		protected void cleanup(Mapper<ImmutableBytesWritable, Result, Text, IntWritable>.Context context)
 				throws IOException, InterruptedException {
 			// TODO Auto-generated method stub
 			super.cleanup(context);

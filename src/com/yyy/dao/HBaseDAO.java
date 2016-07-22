@@ -10,13 +10,21 @@ import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 
 import com.yyy.utils.HBaseUtils;
 
 public class HBaseDAO {
 	public static void main(String[] args) throws IOException {
-		HBaseDAO.get("orderdetail", "Yvonne Yvonne");
+		String[] strColumn={"num"};
+		HBaseDAO.createTable("sort", strColumn);
+		HBaseDAO.put("sort", "a", "num", "val", "5");
+		HBaseDAO.put("sort", "b", "num", "val", "4");
+		HBaseDAO.put("sort", "c", "num", "val", "3");
+		HBaseDAO.put("sort", "d", "num", "val", "2");
+		HBaseDAO.put("sort", "e", "num", "val", "1");
+
 	}
 
 	public static synchronized void createTable(String tableName, String[] strColumn) {
@@ -35,6 +43,7 @@ public class HBaseDAO {
 				tableDescriptor.addFamily(new HColumnDescriptor(string));
 			}
 			hBaseAdmin.createTable(tableDescriptor);
+			hBaseAdmin.close();
 		} catch (MasterNotRunningException e) {
 			e.printStackTrace();
 		} catch (ZooKeeperConnectionException e) {
@@ -54,11 +63,27 @@ public class HBaseDAO {
 		}
 	}
 
-	public static synchronized String get(String tableName, String rowKey) throws IOException {
+	public static String get(String tableName, String rowKey) throws IOException {
 		Get get = new Get(rowKey.getBytes());
 		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// 获取表
 		Result result = table.get(get);
-		//System.out.println(new String(result.getValue("content".getBytes(), "count".getBytes())));
+		// System.out.println(new String(result.getValue("content".getBytes(),
+		// "count".getBytes())));
 		return new String(result.getValue("content".getBytes(), "count".getBytes()));
+	}
+
+	public static void put(String tableName, String rowKey, String family, String qualifier, String value)
+			throws IOException {
+		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// 获取表
+		Put put = new Put(rowKey.getBytes());
+		put.addColumn(family.getBytes(), qualifier.getBytes(), value.getBytes());
+		table.put(put);
+	}
+
+	public static void put(String tableName, String rowKey, String family, String value) throws IOException {
+		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// 获取表
+		Put put = new Put(rowKey.getBytes());
+		put.addColumn(family.getBytes(), null, value.getBytes());
+		table.put(put);
 	}
 }

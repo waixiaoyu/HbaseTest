@@ -4,123 +4,91 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.Mutation;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
-import org.apache.hadoop.hbase.mapreduce.TableReducer;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableMapper;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import com.yyy.utils.HBaseUtils;
+import com.yyy.utils.HadoopUtils;
+import com.yyy.utils.TimeRecord;
 
 public class SortOutput {
 
+	private static final String FAMILY = "content";
+	private static final String QUALIFIER = "count";
+
 	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
 		// TODO Auto-generated method stub
-		String tablename = "orderdetailr";
-		Configuration conf = HBaseUtils.getConfiguration();
-		conf.set(TableOutputFormat.OUTPUT_TABLE, tablename);
-		createHBaseTable(tablename);
-		Job job = Job.getInstance(conf, "order detail");
+		TimeRecord.start();
+		String sourceTable = "orderdetailr";
+		Path outputPath = new Path("hdfs://192.168.3.201:8020/output/");
+		Configuration conf = HadoopUtils.getConfiguration();
+		Job job = Job.getInstance(conf, "test detail");
 		job.setJarByClass(SortOutput.class);
-		job.setNumReduceTasks(3);
-		job.setMapperClass(Map.class);
-		job.setReducerClass(Reduce.class);
-		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(IntWritable.class);
-		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(TableOutputFormat.class);
-		// 设置输入目录
-		FileInputFormat.addInputPath(job, new Path("hdfs://192.168.3.201:8020/input/orderdetail/*"));
-		System.out.println(job.waitForCompletion(true) ? "完成！" : "非正常退出！");
+
+		Scan scan = new Scan();
+		scan.setCaching(500); // 1 is the default in Scan, which will be bad
+		// for
+		// MapReduce jobs
+		scan.setCacheBlocks(false); // don't set to true for MR jobs
+		// set other scan attrs
+		TableMapReduceUtil.initTableMapperJob(sourceTable, // input table
+				scan, // Scan instance to control CF and attribute selection
+				Map.class, // mapper class
+				DoubleWritable.class, // mapper output key
+				Text.class, // mapper output value
+				job);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		FileOutputFormat.setOutputPath(job, outputPath);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(DoubleWritable.class);
+		job.setNumReduceTasks(1);
+
+		HadoopUtils.deleteOutputDirectory(outputPath);
+
+		boolean b = job.waitForCompletion(true);
+		if (!b) {
+			throw new IOException("error with job!");
+		}
+		TimeRecord.stop();
+
 	}
 
-	public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
-		private final static IntWritable one = new IntWritable(1);
+	public static class Map extends TableMapper<DoubleWritable, Text> {
+		private DoubleWritable dw = new DoubleWritable();
 		private Text text = new Text();
 
 		@Override
-		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-			String s = value.toString();
-			text.set(s);
-			if (text.getLength() == 0) {
-				return;
-			}
-			context.write(text, one);
-		}
-
-		@Override
-		protected void cleanup(Mapper<LongWritable, Text, Text, IntWritable>.Context context)
+		protected void map(ImmutableBytesWritable key, Result value,
+				Mapper<ImmutableBytesWritable, Result, DoubleWritable, Text>.Context context)
 				throws IOException, InterruptedException {
 			// TODO Auto-generated method stub
-			super.cleanup(context);
-			System.out.println("end map...");
+			String strValue = new String(value.getValue(FAMILY.getBytes(), QUALIFIER.getBytes()));
+
+			dw.set(Double.valueOf(strValue));
+			text.set(new String(key.get()));
+
+			context.write(dw, text);
 		}
 	}
 
-	public static class Reduce extends TableReducer<Text, IntWritable, NullWritable> {
-		@Override
-		protected void setup(Reducer<Text, IntWritable, NullWritable, Mutation>.Context context)
-				throws IOException, InterruptedException {
-			// TODO Auto-generated method stub
-			super.setup(context);
-			System.out.println("start reduce...");
-		}
+	public static class Reduce extends Reducer<DoubleWritable, Text, Text, DoubleWritable> {
 
 		@Override
-		public void reduce(Text key, Iterable<IntWritable> values, Context context)
+		protected void reduce(DoubleWritable key, Iterable<Text> texts,
+				Reducer<DoubleWritable, Text, Text, DoubleWritable>.Context context)
 				throws IOException, InterruptedException {
-			int sum = 0;
-			for (IntWritable i : values) {
-				sum += i.get();
+			for (Text text : texts) {
+				context.write(text, key);
 			}
-			// Put rowKey
-			Put put = new Put(Bytes.toBytes(key.toString()));
-			// row,columnFamily:column,value = word,content:count,sum
-			put.addColumn(Bytes.toBytes("content"), Bytes.toBytes("count"), Bytes.toBytes(String.valueOf(sum)));
-			context.write(NullWritable.get(), put);
-		}
-
-		@Override
-		protected void cleanup(Reducer<Text, IntWritable, NullWritable, Mutation>.Context context)
-				throws IOException, InterruptedException {
-			// TODO Auto-generated method stub
-			super.cleanup(context);
-			System.out.println("end reduce...");
-		}
-	}
-
-	/**
-	 * create a table
-	 * 
-	 * @param tablename
-	 * @throws IOException
-	 */
-	public static void createHBaseTable(String tablename) throws IOException {
-		HTableDescriptor htd = new HTableDescriptor(TableName.valueOf(tablename));
-		HColumnDescriptor col = new HColumnDescriptor("content");
-		htd.addFamily(col);
-		HBaseAdmin admin = (HBaseAdmin) HBaseUtils.getHConnection().getAdmin();
-		if (admin.tableExists(tablename)) {
-			System.out.println("table exists,trying recreate table!");
-			// admin.disableTable(tablename);
-			// admin.deleteTable(tablename);
-			// admin.createTable(htd);
-		} else {
-			admin.createTable(htd);
-			System.out.println("create new table:" + tablename);
 		}
 	}
 }

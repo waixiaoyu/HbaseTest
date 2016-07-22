@@ -39,7 +39,7 @@ public class SentNameCountToHBase {
 		Configuration conf = HBaseUtils.getConfiguration();
 		conf.set(TableOutputFormat.OUTPUT_TABLE, tablename);
 		createHBaseTable(tablename);
-		Job job = new Job(conf, "namecount table");
+		Job job = Job.getInstance(conf, "namecount table");
 		job.setJarByClass(SentNameCountToHBase.class);
 		job.setNumReduceTasks(3);
 		job.setMapperClass(Map.class);
