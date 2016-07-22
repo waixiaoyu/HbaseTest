@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 
+import com.yyy.dao.HBaseDAO;
 import com.yyy.utils.HBaseUtils;
 import com.yyy.utils.OracleUtils;
 
@@ -61,7 +62,7 @@ public class OracleToHbase {
 	}
 
 	public void parse(String tablename) {
-		HBaseUtils.createTable(HBASE_TABLE_NAME, strColumns);
+		HBaseDAO.createTable(HBASE_TABLE_NAME, strColumns);
 		// 获取put数组，提高put效率
 		List<Put> lPuts = new ArrayList<Put>();
 		ResultSet rs = search(tablename);
