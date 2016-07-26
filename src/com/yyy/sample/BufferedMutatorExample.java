@@ -32,6 +32,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import com.yyy.utils.HBaseUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +75,7 @@ public class BufferedMutatorExample extends Configured implements Tool {
     //
     // step 1: create a single Connection and a BufferedMutator, shared by all worker threads.
     //
-    try (final Connection conn = ConnectionFactory.createConnection(getConf());
+    try (final Connection conn = ConnectionFactory.createConnection(HBaseUtils.getConfiguration());
          final BufferedMutator mutator = conn.getBufferedMutator(params)) {
 
       /** worker pool that operates on BufferedTable instances */

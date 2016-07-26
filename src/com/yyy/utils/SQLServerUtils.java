@@ -5,8 +5,8 @@ import java.sql.DriverManager;
 
 public class SQLServerUtils {
 	private static Connection conn = null;
-	private static final String USERNAME = "sa";
-	private static final String PASSWORD = "123123";
+	private static final String USERNAME = "test";
+	private static final String PASSWORD = "pltgyl@2016";
 
 	public static void main(String[] args) {
 		SQLServerUtils.getConnection();
@@ -19,7 +19,8 @@ public class SQLServerUtils {
 				String sDriverName = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 				// String sDBUrl
 				// ="jdbc:sqlserver://192.168.0.74;databaseName=wakeup";
-				String sDBUrl = "jdbc:sqlserver://192.168.3.28:1433;databaseName=test";
+				//String sDBUrl = "jdbc:sqlserver://192.168.3.28:1433;databaseName=test";
+				String sDBUrl = "jdbc:sqlserver://220.231.225.6:2118;databaseName=PLT_KC";
 				Class.forName(sDriverName);
 				conn = DriverManager.getConnection(sDBUrl, USERNAME, PASSWORD);
 				if (conn != null) {

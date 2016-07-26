@@ -103,7 +103,7 @@ public class GetOutput {
 			if (lhmQueryCache.containsKey(key.toString().split(" ")[0])) {
 				dRadio = (double) sum / lhmQueryCache.get(key.toString().split(" ")[0]);
 			} else {
-				Double dOrderNum = Double.valueOf(HBaseDAO.get("orderuser", key.toString().split(" ")[0]));
+				Double dOrderNum = Double.valueOf(HBaseDAO.getFromRowKey("orderuser", key.toString().split(" ")[0]));
 				lhmQueryCache.put(key.toString().split(" ")[0], dOrderNum);
 				dRadio = (double) sum / dOrderNum;
 			}
