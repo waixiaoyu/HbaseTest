@@ -1,4 +1,4 @@
-package com.yyy.dao;
+package com.yyy.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,25 +24,33 @@ import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.filter.SubstringComparator;
 import org.apache.hadoop.hbase.filter.ValueFilter;
 
-import com.yyy.utils.HBaseUtils;
-
 public class HBaseDAO {
-	public static void main(String[] args) throws IOException {
-		String[] strColumn = { "num" };
-		List<Result> lResults = HBaseDAO.scanColumnByRegexString("PLT_KC", "BI_TERMS_CON", "TEC_BUSINESS", "^02");
-		for (Result result : lResults) {
-			System.out.println(new String(result.getRow()));
-			System.out.println(new String(result.getValue("BI_TERMS_CON".getBytes(), "TEC_BUSINESS".getBytes())));
+	private static HBaseAdmin hBaseAdmin = null;
+	static {
+		try {
+			hBaseAdmin = (HBaseAdmin) HBaseUtils.getHConnection().getAdmin();
+			if (hBaseAdmin == null) {
+				throw new Exception("get connection fail");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+	}
 
+	public static void main(String[] args) throws IOException {
+		// deleteTable("WORD_ID");
+		String[] strColumn = { "id" };
+		// createTable("WORD_ID", strColumn);
+		// put("WORD_ID", "zy", "id", "41806");
+		System.out.println(new String(get("WORD_ID", "zy").getValue("id".getBytes(), null)));
 	}
 
 	public static void createTable(String tableName, String[] strColumn) {
 		System.out.println("start create table ......");
 		try {
-
-			HBaseAdmin hBaseAdmin = (HBaseAdmin) HBaseUtils.getHConnection().getAdmin();
-			if (hBaseAdmin.tableExists(tableName)) {// Èç¹û´æÔÚÒª´´½¨µÄ±í£¬ÄÇÃ´ÏÈÉ¾³ı£¬ÔÙ´´½¨
+			if (hBaseAdmin.tableExists(tableName)) {// å¦‚æœå­˜åœ¨è¦åˆ›å»ºçš„è¡¨ï¼Œé‚£ä¹ˆå…ˆåˆ é™¤ï¼Œå†åˆ›å»º
 				// hBaseAdmin.disableTable(tableName);
 				// hBaseAdmin.deleteTable(tableName);
 				System.out.println(tableName + " is exist....");
@@ -65,11 +73,13 @@ public class HBaseDAO {
 	}
 
 	public static void deleteTable(String tableName) throws IOException {
-		HBaseAdmin hBaseAdmin = (HBaseAdmin) HBaseUtils.getHConnection().getAdmin();
-		if (hBaseAdmin.tableExists(tableName)) {// Èç¹û´æÔÚÒª´´½¨µÄ±í£¬ÄÇÃ´ÏÈÉ¾³ı£¬ÔÙ´´½¨
+		System.out.println("start deleting " + tableName);
+		if (hBaseAdmin.tableExists(tableName)) {// å¦‚æœå­˜åœ¨è¦åˆ›å»ºçš„è¡¨ï¼Œé‚£ä¹ˆå…ˆåˆ é™¤ï¼Œå†åˆ›å»º
 			hBaseAdmin.disableTable(tableName);
 			hBaseAdmin.deleteTable(tableName);
 			System.out.println(tableName + " is detele....");
+		} else {
+			System.out.println(tableName + " does not exist....");
 		}
 	}
 
@@ -79,12 +89,14 @@ public class HBaseDAO {
 	 */
 	public static Result get(String tableName, String rowKey) throws IOException {
 		Get get = new Get(rowKey.getBytes());
-		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// »ñÈ¡±í
+		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// è·å–è¡¨
 		Result result = table.get(get);
-		// System.out.println(new String(result.getValue("content".getBytes(),
-		// "count".getBytes())));
-		// return new String(result.getValue("content".getBytes(),
-		// "count".getBytes()));
+		/**
+		 * you can use the following sentence to get each value.
+		 * System.out.println(new String(result.getValue("content".getBytes(),
+		 * "count".getBytes()))); return new
+		 * String(result.getValue("content".getBytes(), "count".getBytes()));
+		 */
 		return result;
 	}
 
@@ -137,8 +149,8 @@ public class HBaseDAO {
 				new ValueFilter(CompareOp.EQUAL, new SubstringComparator(substring)));
 	}
 
-	public static List<Result> scanColumnByRegexString(String tableName, String family, String qualifier,
-			String regex) throws IOException {
+	public static List<Result> scanColumnByRegexString(String tableName, String family, String qualifier, String regex)
+			throws IOException {
 		// just like String.contain()
 		return scanColumnByFilter(tableName, family, qualifier,
 				new ValueFilter(CompareOp.EQUAL, new RegexStringComparator(regex)));
@@ -150,14 +162,14 @@ public class HBaseDAO {
 	 */
 	public static void put(String tableName, String rowKey, String family, String qualifier, String value)
 			throws IOException {
-		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// »ñÈ¡±í
+		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// è·å–è¡¨
 		Put put = new Put(rowKey.getBytes());
 		put.addColumn(family.getBytes(), qualifier.getBytes(), value.getBytes());
 		table.put(put);
 	}
 
 	public static void put(String tableName, String rowKey, String family, String value) throws IOException {
-		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// »ñÈ¡±í
+		HTable table = new HTable(HBaseUtils.getConfiguration(), tableName);// è·å–è¡¨
 		Put put = new Put(rowKey.getBytes());
 		put.addColumn(family.getBytes(), null, value.getBytes());
 		table.put(put);
